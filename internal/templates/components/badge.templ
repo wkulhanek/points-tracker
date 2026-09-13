@@ -1,0 +1,7 @@
+package components
+
+import "time"
+
+templ Badge(expiration time.Time) {
+	<span class={ badgeClass(expiration) }>{ badgeLabel(expiration) }</span>
+}

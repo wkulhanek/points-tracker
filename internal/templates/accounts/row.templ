@@ -1,0 +1,42 @@
+package accountsview
+
+import (
+	"fmt"
+
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
+)
+
+templ Row(a accounts.Account) {
+	<tr id={ rowID(a.ID) }>
+		<td class="px-4 py-3 font-medium text-slate-900">{ a.Name }</td>
+		<td class="px-4 py-3 text-slate-600">{ a.Provider }</td>
+		<td class="px-4 py-3 text-slate-600">{ a.AccountNumber }</td>
+		<td class="px-4 py-3 text-slate-600">{ formatPoints(a.PointsBalance) }</td>
+		<td class="px-4 py-3">
+			<div class="flex items-center gap-2">
+				<span>{ a.ExpirationDate.Format("Jan 2, 2006") }</span>
+				@components.Badge(a.ExpirationDate)
+			</div>
+		</td>
+		<td class="px-4 py-3 text-right whitespace-nowrap">
+			<button
+				hx-get={ fmt.Sprintf("/accounts/%d/edit", a.ID) }
+				hx-target={ "#" + rowID(a.ID) }
+				hx-swap="outerHTML"
+				class="mr-3 text-slate-600 hover:text-slate-900"
+			>
+				Edit
+			</button>
+			<button
+				hx-post={ fmt.Sprintf("/accounts/%d/delete", a.ID) }
+				hx-target={ "#" + rowID(a.ID) }
+				hx-swap="outerHTML"
+				hx-confirm="Delete this account?"
+				class="text-red-600 hover:text-red-800"
+			>
+				Delete
+			</button>
+		</td>
+	</tr>
+}

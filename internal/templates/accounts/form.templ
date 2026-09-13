@@ -1,0 +1,114 @@
+package accountsview
+
+import (
+	"fmt"
+
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/providers"
+)
+
+templ Form(a accounts.Account, isNew bool, errorMsg string) {
+	if isNew {
+		@newForm(a, errorMsg)
+	} else {
+		@editForm(a, errorMsg)
+	}
+}
+
+templ newForm(a accounts.Account, errorMsg string) {
+	<div class="mb-6 rounded-lg border border-slate-200 bg-white p-4">
+		if errorMsg != "" {
+			<div class="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{ errorMsg }</div>
+		}
+		<form
+			hx-post="/accounts"
+			hx-target="#account-rows"
+			hx-swap="beforeend"
+			class="grid grid-cols-2 gap-3 sm:grid-cols-3"
+		>
+			@fields(a)
+			<div class="col-span-full flex justify-end gap-2 pt-1">
+				<button
+					type="button"
+					onclick="document.getElementById('account-form-slot').innerHTML=''"
+					class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+				>
+					Cancel
+				</button>
+				<button type="submit" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+					Add account
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
+templ editForm(a accounts.Account, errorMsg string) {
+	<tr id={ rowID(a.ID) }>
+		<td colspan="6" class="bg-slate-50 px-4 py-4">
+			if errorMsg != "" {
+				<div class="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{ errorMsg }</div>
+			}
+			<form
+				hx-post={ fmt.Sprintf("/accounts/%d", a.ID) }
+				hx-target={ "#" + rowID(a.ID) }
+				hx-swap="outerHTML"
+				class="grid grid-cols-2 gap-3 sm:grid-cols-3"
+			>
+				@fields(a)
+				<div class="col-span-full flex justify-end gap-2 pt-1">
+					<button
+						type="button"
+						hx-get={ fmt.Sprintf("/accounts/%d", a.ID) }
+						hx-target={ "#" + rowID(a.ID) }
+						hx-swap="outerHTML"
+						class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white"
+					>
+						Cancel
+					</button>
+					<button type="submit" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+						Save
+					</button>
+				</div>
+			</form>
+		</td>
+	</tr>
+}
+
+templ fields(a accounts.Account) {
+	<div class="col-span-2 sm:col-span-1">
+		<label class="block text-xs font-medium text-slate-600">Name</label>
+		<input type="text" name="name" value={ a.Name } placeholder="e.g. Chase Sapphire Points" required
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+	</div>
+	<div>
+		<label class="block text-xs font-medium text-slate-600">Provider</label>
+		<input type="text" name="provider" list="provider-suggestions" value={ a.Provider } placeholder="e.g. Chase" required
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+		<datalist id="provider-suggestions">
+			for _, p := range providers.Common {
+				<option value={ p }></option>
+			}
+		</datalist>
+	</div>
+	<div>
+		<label class="block text-xs font-medium text-slate-600">Account number</label>
+		<input type="text" name="account_number" value={ a.AccountNumber } placeholder="Optional"
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+	</div>
+	<div>
+		<label class="block text-xs font-medium text-slate-600">Points balance</label>
+		<input type="number" name="points_balance" value={ formatPoints(a.PointsBalance) } min="0" required
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+	</div>
+	<div>
+		<label class="block text-xs font-medium text-slate-600">Expiration date</label>
+		<input type="date" name="expiration_date" value={ expirationInputValue(a) } required
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+	</div>
+	<div class="col-span-full">
+		<label class="block text-xs font-medium text-slate-600">Notes</label>
+		<input type="text" name="notes" value={ a.Notes } placeholder="Optional"
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+	</div>
+}

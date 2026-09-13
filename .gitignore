@@ -1,0 +1,9 @@
+/data/
+*.db
+*.db-shm
+*.db-wal
+/web/static/css/app.css
+/bin/
+.env
+.headroom*
+

@@ -1,0 +1,83 @@
+package settingsview
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+)
+
+templ Preferences(appName string, prefs preferences.AppPreferences, thresholds []preferences.Threshold, flashKind string, flashMsg string) {
+	@layout.Base("Preferences", appName, true) {
+		@components.Flash(flashKind, flashMsg)
+		<h1 class="mb-6 text-2xl font-semibold">Preferences</h1>
+
+		<section class="mb-6 rounded-lg border border-slate-200 bg-white p-5">
+			<h2 class="mb-3 text-lg font-medium">General</h2>
+			<form method="post" action="/settings/preferences/general" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+				<div class="col-span-full">
+					<label class="block text-xs font-medium text-slate-600">Application name</label>
+					<input type="text" name="app_display_name" value={ prefs.AppDisplayName } required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Timezone (IANA name)</label>
+					<input type="text" name="timezone" value={ prefs.Timezone } placeholder="Europe/Vienna" required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+					<p class="mt-1 text-xs text-slate-500">Used to decide "today" when checking expiration thresholds.</p>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Notification recipient(s)</label>
+					<input type="text" name="recipient_emails" value={ strings.Join(prefs.RecipientEmails, ", ") } placeholder="you@example.com"
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+					<p class="mt-1 text-xs text-slate-500">Comma-separated if more than one address.</p>
+				</div>
+				<div class="col-span-full flex justify-end pt-1">
+					<button type="submit" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+						Save
+					</button>
+				</div>
+			</form>
+		</section>
+
+		<section class="rounded-lg border border-slate-200 bg-white p-5">
+			<h2 class="mb-3 text-lg font-medium">Notification thresholds</h2>
+			<p class="mb-3 text-sm text-slate-600">Send a reminder this many days before an account's points expire.</p>
+			@ThresholdsList(thresholds)
+			<form hx-post="/settings/preferences/thresholds" hx-target="#thresholds-list" hx-swap="outerHTML" class="mt-4 flex items-end gap-2">
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Days before expiration</label>
+					<input type="number" name="days_before" min="1" required
+						class="mt-1 block w-28 rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<button type="submit" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+					Add threshold
+				</button>
+			</form>
+		</section>
+	}
+}
+
+templ ThresholdsList(thresholds []preferences.Threshold) {
+	<ul id="thresholds-list" class="divide-y divide-slate-200 rounded-md border border-slate-200">
+		for _, t := range thresholds {
+			<li class="flex items-center justify-between px-3 py-2 text-sm">
+				<span>{ fmt.Sprintf("%d days before expiration", t.DaysBefore) }</span>
+				<button
+					hx-post={ fmt.Sprintf("/settings/preferences/thresholds/%d/delete", t.ID) }
+					hx-target="#thresholds-list"
+					hx-swap="outerHTML"
+					hx-confirm="Remove this threshold?"
+					class="text-red-600 hover:text-red-800"
+				>
+					Remove
+				</button>
+			</li>
+		}
+		if len(thresholds) == 0 {
+			<li class="px-3 py-3 text-sm text-slate-500">No thresholds configured — you won't receive any notifications.</li>
+		}
+	</ul>
+}

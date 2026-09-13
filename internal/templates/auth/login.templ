@@ -1,0 +1,32 @@
+package authview
+
+import "github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+
+templ Login(appName string, errorMsg string) {
+	@layout.Base("Log in", appName, false) {
+		<div class="mx-auto mt-16 max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+			<h1 class="mb-6 text-center text-xl font-semibold">{ appName }</h1>
+			if errorMsg != "" {
+				<div class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
+					{ errorMsg }
+				</div>
+			}
+			<form method="post" action="/login" class="space-y-4">
+				<div>
+					<label for="username" class="block text-sm font-medium text-slate-700">Username</label>
+					<input id="username" name="username" type="text" required autofocus
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"/>
+				</div>
+				<div>
+					<label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+					<input id="password" name="password" type="password" required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"/>
+				</div>
+				<button type="submit"
+					class="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+					Log in
+				</button>
+			</form>
+		</div>
+	}
+}

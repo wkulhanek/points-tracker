@@ -1,0 +1,114 @@
+package settingsview
+
+import (
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+)
+
+templ Email(appName string, settings email.Settings, gmailConfigured bool, flashKind string, flashMsg string) {
+	@layout.Base("Email Settings", appName, true) {
+		@components.Flash(flashKind, flashMsg)
+		<h1 class="mb-6 text-2xl font-semibold">Email Settings</h1>
+
+		<section class="mb-6 rounded-lg border border-slate-200 bg-white p-5">
+			<div class="mb-3 flex items-center justify-between">
+				<h2 class="text-lg font-medium">Gmail</h2>
+				if settings.ProviderType == email.ProviderGmail {
+					<span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Active</span>
+				}
+			</div>
+			if !gmailConfigured {
+				<p class="text-sm text-slate-500">
+					Gmail sign-in isn't configured on this server (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are not set).
+				</p>
+			} else if settings.GmailAccountEmail != "" {
+				<p class="mb-3 text-sm text-slate-600">Connected as <span class="font-medium">{ settings.GmailAccountEmail }</span></p>
+				<form method="post" action="/settings/email/gmail/disconnect">
+					<button type="submit" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+						Disconnect Gmail
+					</button>
+				</form>
+			} else {
+				<p class="mb-3 text-sm text-slate-600">Connect a Gmail account to send notification emails through it.</p>
+				<a
+					href="/oauth/google/start"
+					class="inline-block rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+				>
+					Connect Gmail
+				</a>
+			}
+		</section>
+
+		<section class="mb-6 rounded-lg border border-slate-200 bg-white p-5">
+			<div class="mb-3 flex items-center justify-between">
+				<h2 class="text-lg font-medium">SMTP</h2>
+				if settings.ProviderType == email.ProviderSMTP {
+					<span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Active</span>
+				}
+			</div>
+			<form method="post" action="/settings/email/smtp" class="grid grid-cols-2 gap-3">
+				<div class="col-span-2 sm:col-span-1">
+					<label class="block text-xs font-medium text-slate-600">Host</label>
+					<input type="text" name="host" value={ settings.SMTPHost } required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Port</label>
+					<input type="number" name="port" value={ smtpPortValue(settings.SMTPPort) } required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Security</label>
+					<select name="security" class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+						<option value="starttls" selected?={ settings.SMTPSecurity == email.SMTPSecurityStartTLS }>STARTTLS (587)</option>
+						<option value="tls" selected?={ settings.SMTPSecurity == email.SMTPSecurityTLS }>Implicit TLS (465)</option>
+						<option value="none" selected?={ settings.SMTPSecurity == email.SMTPSecurityNone }>None</option>
+					</select>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Username</label>
+					<input type="text" name="username" value={ settings.SMTPUsername }
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-slate-600">Password</label>
+					<input type="password" name="password" placeholder={ smtpPasswordPlaceholder(settings.SMTPPassword) }
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div class="col-span-2">
+					<label class="block text-xs font-medium text-slate-600">From address</label>
+					<input type="email" name="from_address" value={ settings.SMTPFromAddress } required
+						class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+				</div>
+				<div class="col-span-2 flex justify-end pt-1">
+					<button type="submit" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+						Save SMTP settings
+					</button>
+				</div>
+			</form>
+		</section>
+
+		<section class="rounded-lg border border-slate-200 bg-white p-5">
+			<h2 class="mb-3 text-lg font-medium">Test</h2>
+			<p class="mb-3 text-sm text-slate-600">Send a test email using whichever provider is active above.</p>
+			<button
+				hx-post="/settings/email/test"
+				hx-target="#test-email-result"
+				hx-swap="innerHTML"
+				class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+			>
+				Send test e-mail
+			</button>
+			<div id="test-email-result" class="mt-3"></div>
+		</section>
+	}
+}
+
+templ TestResult(ok bool, message string) {
+	if ok {
+		<div class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 ring-1 ring-emerald-200">{ message }</div>
+	} else {
+		<div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{ message }</div>
+	}
+}
