@@ -21,4 +21,10 @@ type Deps struct {
 	EmailSettings *email.SettingsStore
 	GmailOAuth    *gmail.OAuth // nil if GOOGLE_CLIENT_ID/SECRET aren't configured
 	SenderFactory *factory.Factory
+	// TrustProxy mirrors config.Config.TrustProxy: whether X-Forwarded-For
+	// may be trusted to identify the client for rate limiting.
+	TrustProxy bool
+	// BaseURL is the externally-reachable URL, used as a trusted reference
+	// for the same-origin (CSRF) check.
+	BaseURL string
 }

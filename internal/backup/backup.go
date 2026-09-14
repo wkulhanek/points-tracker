@@ -82,6 +82,12 @@ func (s *Scheduler) Snapshot() error {
 		return fmt.Errorf("vacuum into %s: %w", path, err)
 	}
 
+	// Snapshots contain session hashes and stored email credentials; keep
+	// them readable only by the process owner regardless of umask.
+	if err := os.Chmod(path, 0o600); err != nil {
+		return fmt.Errorf("chmod snapshot %s: %w", path, err)
+	}
+
 	slog.Info("backup: snapshot written", "path", path)
 	return nil
 }

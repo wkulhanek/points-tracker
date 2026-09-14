@@ -35,6 +35,15 @@ func main() {
 }
 
 func run() error {
+	// Everything this process creates (the SQLite file, WAL/SHM files, and
+	// daily backup snapshots) holds session hashes and email credentials,
+	// so default every new file/directory to owner-only regardless of the
+	// host's umask. Without this, e.g. backup.go's post-creation
+	// os.Chmod(0o600) on each snapshot still leaves a brief window right
+	// after VACUUM INTO creates the file where a permissive host umask
+	// (022) would make it group/world-readable.
+	syscall.Umask(0o077)
+
 	cfg, err := config.Load()
 	if err != nil {
 		return err
@@ -74,6 +83,8 @@ func run() error {
 		EmailSettings: emailSettings,
 		GmailOAuth:    gmailOAuth,
 		SenderFactory: senderFactory,
+		TrustProxy:    cfg.TrustProxy,
+		BaseURL:       cfg.BaseURL,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -85,10 +96,32 @@ func run() error {
 	backupScheduler := backup.NewScheduler(conn, cfg.DataDir)
 	go backupScheduler.Run(ctx)
 
+	// Periodically drop expired sessions and stale rate-limiter entries so
+	// neither grows without bound over a long uptime.
+	go func() {
+		ticker := time.NewTicker(15 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := authStore.DeleteExpiredSessions(); err != nil {
+					slog.Error("prune expired sessions", "error", err)
+				}
+				deps.LoginLimiter.Cleanup()
+			}
+		}
+	}()
+
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           web.NewRouter(deps),
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    1 << 20, // 1 MiB
 	}
 
 	go func() {

@@ -25,9 +25,18 @@ func handleAccountsList(d *Deps) http.HandlerFunc {
 	}
 }
 
+// renderAccountForm renders the add/edit form with its owner-autocomplete
+// list freshly loaded. Centralized here (rather than repeated at each call
+// site) since every form render — new, edit, and every validation-failure
+// re-render — needs the same up-to-date suggestions.
+func renderAccountForm(d *Deps, w http.ResponseWriter, r *http.Request, a accounts.Account, isNew bool, errorMsg string) {
+	owners, _ := d.Accounts.DistinctOwners()
+	render(w, r, accountsview.Form(a, isNew, errorMsg, owners))
+}
+
 func handleAccountNewForm(d *Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		render(w, r, accountsview.Form(accounts.Account{}, true, ""))
+		renderAccountForm(d, w, r, accounts.Account{}, true, "")
 	}
 }
 
@@ -35,13 +44,13 @@ func handleAccountCreate(d *Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		in, err := parseAccountInput(r)
 		if err != nil {
-			render(w, r, accountsview.Form(accounts.Account{}, true, err.Error()))
+			renderAccountForm(d, w, r, accounts.Account{}, true, err.Error())
 			return
 		}
 
 		id, err := d.Accounts.Create(in)
 		if err != nil {
-			render(w, r, accountsview.Form(accounts.Account{}, true, "Failed to save account."))
+			renderAccountForm(d, w, r, accounts.Account{}, true, "Failed to save account.")
 			return
 		}
 
@@ -75,7 +84,7 @@ func handleAccountEditForm(d *Deps) http.HandlerFunc {
 			http.Error(w, "failed to load account", http.StatusInternalServerError)
 			return
 		}
-		render(w, r, accountsview.Form(a, false, ""))
+		renderAccountForm(d, w, r, a, false, "")
 	}
 }
 
@@ -118,14 +127,14 @@ func handleAccountUpdate(d *Deps) http.HandlerFunc {
 		if err != nil {
 			a, _ := d.Accounts.Get(id)
 			a.ID = id
-			render(w, r, accountsview.Form(a, false, err.Error()))
+			renderAccountForm(d, w, r, a, false, err.Error())
 			return
 		}
 
 		if err := d.Accounts.Update(id, in); err != nil {
 			a, _ := d.Accounts.Get(id)
 			a.ID = id
-			render(w, r, accountsview.Form(a, false, "Failed to save account."))
+			renderAccountForm(d, w, r, a, false, "Failed to save account.")
 			return
 		}
 
@@ -177,9 +186,9 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 		return accounts.Input{}, errors.New("points balance must be a non-negative number.")
 	}
 
-	owner := accounts.Owner(r.FormValue("owner"))
-	if !validOwner(owner) {
-		return accounts.Input{}, errors.New("owner must be Wolfgang, Barbara, or Joint.")
+	owner := accounts.Owner(strings.TrimSpace(r.FormValue("owner")))
+	if owner == "" {
+		return accounts.Input{}, errors.New("owner is required.")
 	}
 
 	doesNotExpire := r.FormValue("does_not_expire") != ""
@@ -202,13 +211,4 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 		Owner:          owner,
 		Notes:          strings.TrimSpace(r.FormValue("notes")),
 	}, nil
-}
-
-func validOwner(o accounts.Owner) bool {
-	for _, valid := range accounts.Owners {
-		if o == valid {
-			return true
-		}
-	}
-	return false
 }

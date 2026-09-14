@@ -120,6 +120,34 @@ func (s *Store) Delete(id int64) error {
 	return err
 }
 
+// DistinctOwners returns every distinct, non-empty owner name already used
+// on an account, alphabetically — used to populate the account form's owner
+// autocomplete so previously-typed names become pickable instead of
+// retyped. Grouping (rather than SELECT DISTINCT) is case-insensitive, so
+// "Wolfgang" and "wolfgang" collapse into a single suggestion instead of
+// showing as two near-duplicate entries.
+func (s *Store) DistinctOwners() ([]string, error) {
+	rows, err := s.db.Query(`
+		SELECT owner FROM accounts
+		WHERE trim(owner) != ''
+		GROUP BY owner COLLATE NOCASE
+		ORDER BY owner COLLATE NOCASE`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []string
+	for rows.Next() {
+		var owner string
+		if err := rows.Scan(&owner); err != nil {
+			return nil, err
+		}
+		out = append(out, owner)
+	}
+	return out, rows.Err()
+}
+
 // BeginTx starts a transaction for callers (Service) that need to combine
 // an account update with other statements atomically.
 func (s *Store) BeginTx() (*sql.Tx, error) {

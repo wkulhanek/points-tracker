@@ -15,6 +15,12 @@ func BootstrapAdmin(store *Store, username, password string) error {
 		return nil
 	}
 
+	// Only enforced for the initial seed; changing ADMIN_PASSWORD after the
+	// first boot has no effect (see the package doc).
+	if len(password) < MinPasswordLength {
+		return fmt.Errorf("ADMIN_PASSWORD must be at least %d characters", MinPasswordLength)
+	}
+
 	hash, err := HashPassword(password)
 	if err != nil {
 		return fmt.Errorf("hash admin password: %w", err)

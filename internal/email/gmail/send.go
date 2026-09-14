@@ -56,13 +56,24 @@ func (s *Sender) Send(ctx context.Context, to []string, subject, body string) er
 }
 
 func buildRawMessage(from string, to []string, subject, body string) string {
+	sanitizedTo := make([]string, len(to))
+	for i, addr := range to {
+		sanitizedTo[i] = sanitizeHeader(addr)
+	}
+
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "From: %s\r\n", from)
-	fmt.Fprintf(&buf, "To: %s\r\n", strings.Join(to, ", "))
-	fmt.Fprintf(&buf, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&buf, "From: %s\r\n", sanitizeHeader(from))
+	fmt.Fprintf(&buf, "To: %s\r\n", strings.Join(sanitizedTo, ", "))
+	fmt.Fprintf(&buf, "Subject: %s\r\n", sanitizeHeader(subject))
 	buf.WriteString("MIME-Version: 1.0\r\n")
 	buf.WriteString("Content-Type: text/plain; charset=UTF-8\r\n")
 	buf.WriteString("\r\n")
 	buf.WriteString(body)
 	return base64.URLEncoding.EncodeToString(buf.Bytes())
+}
+
+// sanitizeHeader strips CR/LF so a crafted address or subject can't inject
+// additional mail headers (SMTP header injection).
+func sanitizeHeader(s string) string {
+	return strings.NewReplacer("\r", "", "\n", "").Replace(s)
 }

@@ -18,21 +18,16 @@ type Account struct {
 	UpdatedAt      time.Time
 }
 
-// Owner records who an account belongs to. Backed by a DB CHECK constraint
-// (see internal/db/migrations/0001_init.sql) — validate against this set at
-// the web layer too, for a friendlier error than a raw SQL constraint
-// failure.
+// Owner records who an account belongs to. It's free text, not a fixed
+// enum: the web layer suggests previously-used names (see
+// Store.DistinctOwners) via an autocomplete list, the same way Provider
+// suggests common providers, but a household can introduce a new owner
+// simply by typing their name once.
 type Owner string
 
-const (
-	OwnerWolfgang Owner = "Wolfgang"
-	OwnerBarbara  Owner = "Barbara"
-	OwnerJoint    Owner = "Joint"
-)
-
-// Owners lists the allowed Owner values in display order, for populating
-// the account form's dropdown.
-var Owners = []Owner{OwnerWolfgang, OwnerBarbara, OwnerJoint}
+// OwnerJoint is the default owner for a brand-new account, since most
+// points programs start out shared until edited otherwise.
+const OwnerJoint Owner = "Joint"
 
 // dateLayout is the storage/parse format for ExpirationDate — a bare
 // calendar date, deliberately with no time-of-day or timezone component.
