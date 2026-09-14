@@ -1,17 +1,14 @@
 // Package email defines the provider-agnostic Sender interface used by
 // both the notification scheduler and the "Test e-mail" button, plus the
-// settings storage shared by the two concrete providers (Gmail OAuth and
-// plain SMTP) in the gmail/ and smtp/ subpackages.
+// settings storage used by the plain SMTP provider in the smtp/
+// subpackage.
 package email
-
-import "time"
 
 type ProviderType string
 
 const (
-	ProviderNone  ProviderType = "none"
-	ProviderGmail ProviderType = "gmail"
-	ProviderSMTP  ProviderType = "smtp"
+	ProviderNone ProviderType = "none"
+	ProviderSMTP ProviderType = "smtp"
 )
 
 type SMTPSecurity string
@@ -27,11 +24,6 @@ const (
 // meaningful; the other provider's fields are left as their zero value.
 type Settings struct {
 	ProviderType ProviderType
-
-	GmailRefreshToken string
-	GmailAccessToken  string
-	GmailTokenExpiry  time.Time
-	GmailAccountEmail string
 
 	SMTPHost        string
 	SMTPPort        int

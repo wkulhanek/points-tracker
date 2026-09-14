@@ -21,7 +21,6 @@ import (
 	"github.com/wkulhanek/points-tracker/internal/db"
 	"github.com/wkulhanek/points-tracker/internal/email"
 	"github.com/wkulhanek/points-tracker/internal/email/factory"
-	"github.com/wkulhanek/points-tracker/internal/email/gmail"
 	"github.com/wkulhanek/points-tracker/internal/notifications"
 	"github.com/wkulhanek/points-tracker/internal/preferences"
 	"github.com/wkulhanek/points-tracker/internal/web"
@@ -69,11 +68,7 @@ func run() error {
 	emailSettings := email.NewSettingsStore(conn)
 	notificationsStore := notifications.NewStore(conn)
 
-	var gmailOAuth *gmail.OAuth
-	if cfg.GoogleClientID != "" && cfg.GoogleClientSecret != "" {
-		gmailOAuth = gmail.NewOAuth(cfg.GoogleClientID, cfg.GoogleClientSecret, cfg.BaseURL)
-	}
-	senderFactory := factory.New(emailSettings, gmailOAuth)
+	senderFactory := factory.New(emailSettings)
 
 	deps := &web.Deps{
 		AuthStore:     authStore,
@@ -81,7 +76,6 @@ func run() error {
 		Accounts:      accountsSvc,
 		Preferences:   prefsStore,
 		EmailSettings: emailSettings,
-		GmailOAuth:    gmailOAuth,
 		SenderFactory: senderFactory,
 		TrustProxy:    cfg.TrustProxy,
 		BaseURL:       cfg.BaseURL,

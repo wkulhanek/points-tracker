@@ -10,8 +10,7 @@ expire.
 - Get notified by email a configurable number of days before an account's
   points expire (30 and 7 days by default) — renewing/updating an account's
   expiration date automatically re-arms its notifications.
-- Send notifications via a connected Gmail account (OAuth, no app passwords)
-  or any SMTP server.
+- Send notifications via any SMTP server.
 - Single built-in admin login — no external identity provider required.
 - All data in a single SQLite file; automatic daily backups.
 
@@ -48,29 +47,16 @@ Other targets: `make build` (produces `bin/server`), `make test`, `make vet`,
 |---|---|---|
 | `PORT` | no (default `8080`) | HTTP listen port. Plain HTTP only — put a TLS-terminating reverse proxy in front for real deployments. |
 | `DATA_DIR` | no (default `./data`) | Directory for the SQLite database and its `backups/` subdirectory. Must be writable. |
-| `BASE_URL` | no (default `http://localhost:8080`) | This app's externally-reachable URL; used to build the Gmail OAuth redirect URL. |
+| `BASE_URL` | no (default `http://localhost:8080`) | This app's externally-reachable URL; used as the trusted origin for the same-origin (CSRF) check on state-changing requests. |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | **yes** | Seeds the single admin account on first boot only. |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | no | Enables the "Connect Gmail" option under Email Settings. Omit both to hide it and use SMTP only. |
 
 Everything else — app display name, timezone, notification thresholds,
-notification recipient(s), which email provider is active — is stored in the
-database and edited from the UI (Preferences / Email Settings pages), so it
-survives without needing a restart or redeploy.
-
-### Setting up Gmail OAuth (optional)
-
-1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
-   create an OAuth 2.0 Client ID of type **Web application**.
-2. Add an authorized redirect URI: `<BASE_URL>/oauth/google/callback` (e.g.
-   `https://points.example.com/oauth/google/callback`).
-3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from that client.
-4. Restart the app, then click **Connect Gmail** on the Email Settings page
-   and sign in. This one-time app registration step is the only manual part —
-   from then on, connecting/reconnecting Gmail is just the normal Google
-   consent screen redirect, no separate credential handling needed.
-
-The app only ever requests the `gmail.send` scope — it can send mail through
-the connected account but never reads the mailbox.
+notification recipient(s), SMTP settings — is stored in the database and
+edited from the UI (Preferences / Email Settings pages), so it survives
+without needing a restart or redeploy. Gmail works fine as the SMTP server:
+enable 2FA on the account, generate an
+[app password](https://myaccount.google.com/apppasswords), and point the
+Email Settings page at `smtp.gmail.com:587` with that password.
 
 ## Deployment
 
@@ -129,7 +115,6 @@ internal/backup/       daily SQLite snapshot scheduler
 internal/config/       env var loading
 internal/db/           SQLite connection + embedded migrations
 internal/email/        provider-agnostic Sender interface + settings storage
-internal/email/gmail/  Gmail OAuth + send-via-Gmail-API
 internal/email/smtp/   plain SMTP send
 internal/email/factory/  picks the active provider's Sender
 internal/notifications/  pure evaluator (unit tested) + hourly scheduler
@@ -143,7 +128,7 @@ deploy/quadlet/         Podman Quadlet unit for Fedora
 ## Design notes / known simplifications
 
 - Single admin user, no multi-user support or account management UI.
-- Gmail/SMTP credentials are stored in SQLite in plaintext — acceptable for a
+- SMTP credentials are stored in SQLite in plaintext — acceptable for a
   single-user, self-hosted app behind your own reverse proxy, but don't
   expose the data directory.
 - No explicit CSRF token middleware; relies on `SameSite=Lax` session cookies.

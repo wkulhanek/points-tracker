@@ -9,7 +9,6 @@ import (
 	"github.com/wkulhanek/points-tracker/internal/auth"
 	"github.com/wkulhanek/points-tracker/internal/email"
 	"github.com/wkulhanek/points-tracker/internal/email/factory"
-	"github.com/wkulhanek/points-tracker/internal/email/gmail"
 	"github.com/wkulhanek/points-tracker/internal/preferences"
 )
 
@@ -19,7 +18,6 @@ type Deps struct {
 	Accounts      *accounts.Service
 	Preferences   *preferences.Store
 	EmailSettings *email.SettingsStore
-	GmailOAuth    *gmail.OAuth // nil if GOOGLE_CLIENT_ID/SECRET aren't configured
 	SenderFactory *factory.Factory
 	// TrustProxy mirrors config.Config.TrustProxy: whether X-Forwarded-For
 	// may be trusted to identify the client for rate limiting.

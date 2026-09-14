@@ -62,31 +62,25 @@ denial of service. It now takes the right-most `X-Forwarded-For` entry when
 ever directly reachable). Rate-limiter memory is also bounded and periodically
 swept (`internal/auth/ratelimit.go`, cleanup goroutine in `main.go`).
 
-### 1.7 Email header injection — `internal/email/gmail/send.go`
-`buildRawMessage` interpolated the subject and recipients into raw SMTP
-headers without stripping CR/LF, allowing header injection. Header values are
-now sanitized.
-
-### 1.8 Reduced information disclosure — `internal/web/settings_email_handlers.go`
+### 1.7 Reduced information disclosure — `internal/web/settings_email_handlers.go`
 The "test email" error was echoed to the browser; it can contain SMTP
 hostnames, internal IPs, and credential hints. It is now logged server-side
-and the user gets a generic message. The OAuth `state` comparison now uses
-`subtle.ConstantTimeCompare`.
+and the user gets a generic message.
 
-### 1.9 Account-enumeration timing — `internal/auth/password.go`,
+### 1.8 Account-enumeration timing — `internal/auth/password.go`,
 `internal/web/auth_handlers.go`
 An unknown username skipped the bcrypt check (short-circuit), so timing
 leaked whether an account existed. A dummy bcrypt hash is now always
 compared.
 
-### 1.10 Weak bootstrap password rejected — `internal/auth/admin_bootstrap.go`
+### 1.9 Weak bootstrap password rejected — `internal/auth/admin_bootstrap.go`
 `ADMIN_PASSWORD` must now be at least 12 characters on first boot.
 
-### 1.11 Backup permissions — `internal/backup/backup.go`
+### 1.10 Backup permissions — `internal/backup/backup.go`
 Snapshots (which contain session hashes and stored email credentials) are
 now `chmod 0600` regardless of umask.
 
-### 1.12 Auth event logging
+### 1.11 Auth event logging
 Login attempts are logged with username and client IP (successes at `Info`,
 failures and rate-limit hits at `Warn`), giving an audit trail in the
 container/journald logs.
@@ -101,8 +95,8 @@ container/journald logs.
 | High | Shorter sessions + rotation | 30-day absolute TTL with no idle timeout is long. Reduce to ~7 days idle / 30 days absolute, and rotate the session token on privilege change. |
 | High | Password change / MFA | There is no way to rotate the admin password after first boot. Add a password-change flow and, ideally, TOTP second factor. |
 | Medium | Strict CSP | Drop `script-src 'unsafe-inline'` by moving the two inline handlers in `accounts/form.templ` into `web/static/js/` and disabling HTMX's inline style injection. Then `script-src 'self'`. |
-| Medium | Encrypt secrets at rest | SMTP password and Gmail refresh token are plaintext in SQLite. Encrypt with a key from the environment (e.g. `SECRET_KEY`) or rely on full-disk encryption and restrict the volume. |
-| Medium | Versioned dependencies / scanning | Add `govulncheck` and Dependabot; `google.golang.org/api` and `oauth2` are large surfaces. |
+| Medium | Encrypt secrets at rest | The SMTP password is plaintext in SQLite. Encrypt with a key from the environment (e.g. `SECRET_KEY`) or rely on full-disk encryption and restrict the volume. |
+| Medium | Versioned dependencies / scanning | Add `govulncheck` and Dependabot. |
 | Low | CSRF tokens | `SameSite=Lax` + origin check is solid; per-session synchronizer tokens would cover exotic same-site/subdomain cases. |
 | Low | Static directory listing | `GET /static/` may enumerate `css/` and `js/`. Serve explicit subtrees if you want to eliminate it. |
 | Low | Flash-message spoofing | `/accounts?kind=error&msg=...` lets a crafted link render arbitrary (escaped) text in the UI. Cosmetic/phishing only. |

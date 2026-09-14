@@ -10,10 +10,9 @@ import (
 // treat this as "nothing to do / show a setup prompt", not a hard error).
 var ErrNoProvider = errors.New("no email provider configured")
 
-// Sender is implemented by both the Gmail and SMTP providers (see the
-// gmail/ and smtp/ subpackages) so the notification scheduler and the
-// "Test e-mail" button can send through whichever one is currently active
-// without caring which it is.
+// Sender is implemented by the SMTP provider (see the smtp/ subpackage) so
+// the notification scheduler and the "Test e-mail" button can send without
+// caring about the concrete implementation.
 type Sender interface {
 	Send(ctx context.Context, to []string, subject, body string) error
 }

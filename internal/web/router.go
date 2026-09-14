@@ -38,14 +38,8 @@ func NewRouter(d *Deps) http.Handler {
 	mux.Handle("POST /accounts/{id}", protect(handleAccountUpdate(d)))
 	mux.Handle("POST /accounts/{id}/delete", protect(handleAccountDelete(d)))
 
-	// Email settings, including the Gmail OAuth flow. The callback is left
-	// unauthenticated since it's reached via a top-level browser redirect
-	// from Google rather than an in-app link; the state cookie is what
-	// actually guards it.
+	// Email settings.
 	mux.Handle("GET /settings/email", protect(handleEmailSettingsPage(d)))
-	mux.Handle("GET /oauth/google/start", protect(handleGoogleOAuthStart(d)))
-	mux.HandleFunc("GET /oauth/google/callback", handleGoogleOAuthCallback(d))
-	mux.Handle("POST /settings/email/gmail/disconnect", protect(handleGmailDisconnect(d)))
 	mux.Handle("POST /settings/email/smtp", protect(handleSMTPSave(d)))
 	mux.Handle("POST /settings/email/test", protect(handleTestEmail(d)))
 

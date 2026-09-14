@@ -6,4 +6,4 @@
 /bin/
 .env
 .headroom*
-
+.DS_Store

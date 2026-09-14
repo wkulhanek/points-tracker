@@ -1,11 +1,11 @@
 // Package config loads application configuration from environment variables.
 //
 // Everything here is deliberately infrastructure/secret-level configuration
-// (port, data directory, admin bootstrap credentials, Gmail OAuth client
-// credentials). User-editable behavior — app name, timezone, notification
-// thresholds/recipients, which email provider is active — lives in the
-// database instead (see internal/preferences and internal/email) so it can
-// be changed from the UI without a restart or redeploy.
+// (port, data directory, admin bootstrap credentials). User-editable
+// behavior — app name, timezone, notification thresholds/recipients, which
+// email provider is active — lives in the database instead (see
+// internal/preferences and internal/email) so it can be changed from the UI
+// without a restart or redeploy.
 package config
 
 import (
@@ -21,20 +21,14 @@ type Config struct {
 	// subdirectory) lives. Must be writable by the process.
 	DataDir string
 	// BaseURL is the externally-reachable URL of this app (behind whatever
-	// reverse proxy fronts it), used to build the Gmail OAuth redirect URL.
+	// reverse proxy fronts it), used as the trusted origin for the
+	// same-origin (CSRF) check on state-changing requests.
 	BaseURL string
 
 	// AdminUsername/AdminPassword seed the single admin user on first boot,
 	// only if the users table is empty. Ignored on subsequent boots.
 	AdminUsername string
 	AdminPassword string
-
-	// GoogleClientID/GoogleClientSecret are the OAuth client credentials for
-	// the "Connect Gmail" flow, created once in Google Cloud Console. Left
-	// empty, the Gmail option is simply unavailable in the UI (SMTP still
-	// works).
-	GoogleClientID     string
-	GoogleClientSecret string
 
 	// TrustProxy indicates that the app is reachable only through a trusted
 	// reverse proxy that sets X-Forwarded-* headers. When true, the client
@@ -51,14 +45,12 @@ type Config struct {
 // missing.
 func Load() (Config, error) {
 	cfg := Config{
-		Port:               getEnv("PORT", "8080"),
-		DataDir:            getEnv("DATA_DIR", "./data"),
-		BaseURL:            getEnv("BASE_URL", "http://localhost:8080"),
-		AdminUsername:      os.Getenv("ADMIN_USERNAME"),
-		AdminPassword:      os.Getenv("ADMIN_PASSWORD"),
-		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		TrustProxy:         !strings.EqualFold(getEnv("TRUST_PROXY", "true"), "false"),
+		Port:          getEnv("PORT", "8080"),
+		DataDir:       getEnv("DATA_DIR", "./data"),
+		BaseURL:       getEnv("BASE_URL", "http://localhost:8080"),
+		AdminUsername: os.Getenv("ADMIN_USERNAME"),
+		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
+		TrustProxy:    !strings.EqualFold(getEnv("TRUST_PROXY", "true"), "false"),
 	}
 
 	if cfg.AdminUsername == "" || cfg.AdminPassword == "" {

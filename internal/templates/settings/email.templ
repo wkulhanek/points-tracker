@@ -6,39 +6,10 @@ import (
 	"github.com/wkulhanek/points-tracker/internal/templates/layout"
 )
 
-templ Email(appName string, settings email.Settings, gmailConfigured bool, flashKind string, flashMsg string) {
+templ Email(appName string, settings email.Settings, flashKind string, flashMsg string) {
 	@layout.Base("Email Settings", appName, true) {
 		@components.Flash(flashKind, flashMsg)
 		<h1 class="mb-6 text-2xl font-semibold">Email Settings</h1>
-
-		<section class="mb-6 rounded-lg border border-slate-200 bg-white p-5">
-			<div class="mb-3 flex items-center justify-between">
-				<h2 class="text-lg font-medium">Gmail</h2>
-				if settings.ProviderType == email.ProviderGmail {
-					<span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Active</span>
-				}
-			</div>
-			if !gmailConfigured {
-				<p class="text-sm text-slate-500">
-					Gmail sign-in isn't configured on this server (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are not set).
-				</p>
-			} else if settings.GmailAccountEmail != "" {
-				<p class="mb-3 text-sm text-slate-600">Connected as <span class="font-medium">{ settings.GmailAccountEmail }</span></p>
-				<form method="post" action="/settings/email/gmail/disconnect">
-					<button type="submit" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-						Disconnect Gmail
-					</button>
-				</form>
-			} else {
-				<p class="mb-3 text-sm text-slate-600">Connect a Gmail account to send notification emails through it.</p>
-				<a
-					href="/oauth/google/start"
-					class="inline-block rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-				>
-					Connect Gmail
-				</a>
-			}
-		</section>
 
 		<section class="mb-6 rounded-lg border border-slate-200 bg-white p-5">
 			<div class="mb-3 flex items-center justify-between">
