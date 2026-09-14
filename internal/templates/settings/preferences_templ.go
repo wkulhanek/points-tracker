@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/templates/components"
+	"github.com/wkulhanek/points-tracker/internal/templates/layout"
 )
 
 func Preferences(appName string, prefs preferences.AppPreferences, thresholds []preferences.Threshold, flashKind string, flashMsg string) templ.Component {

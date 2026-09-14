@@ -8,7 +8,7 @@ import (
 
 	gomail "github.com/wneessen/go-mail"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email"
 )
 
 // Sender implements email.Sender by delivering through a configured SMTP

@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/templates/components"
 )
 
 func Row(a accounts.Account) templ.Component {

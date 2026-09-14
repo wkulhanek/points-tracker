@@ -10,7 +10,7 @@ import (
 	gmailapi "google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email"
 )
 
 // Sender implements email.Sender by sending through the Gmail API using

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
 )
 
 func rowID(id int64) string {

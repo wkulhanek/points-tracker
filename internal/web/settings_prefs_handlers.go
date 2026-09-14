@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/settings"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/templates/settings"
 )
 
 func handlePreferencesPage(d *Deps) http.HandlerFunc {

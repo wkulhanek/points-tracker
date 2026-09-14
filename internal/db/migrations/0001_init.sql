@@ -1,4 +1,4 @@
--- Initial schema for Kulhanek Points Tracker.
+-- Initial schema for Points Tracker.
 
 CREATE TABLE users (
     id            INTEGER PRIMARY KEY,
@@ -76,7 +76,7 @@ INSERT INTO email_settings (id, provider_type) VALUES (1, 'none');
 -- Singleton row (id is always 1) holding app-wide preferences.
 CREATE TABLE app_preferences (
     id                INTEGER PRIMARY KEY CHECK (id = 1),
-    app_display_name TEXT NOT NULL DEFAULT 'Kulhanek Points Tracker',
+    app_display_name TEXT NOT NULL DEFAULT 'Points Tracker',
     timezone          TEXT NOT NULL DEFAULT 'Europe/Vienna',
     recipient_emails TEXT NOT NULL DEFAULT '',
     updated_at        TEXT NOT NULL DEFAULT (datetime('now'))

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/db/migrations"
+	"github.com/wkulhanek/points-tracker/internal/db/migrations"
 )
 
 // Migrate applies any embedded migration files that haven't been recorded in

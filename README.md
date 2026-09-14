@@ -1,4 +1,4 @@
-# Kulhanek Points Tracker
+# Points Tracker
 
 A small, self-hosted app for tracking loyalty/rewards points accounts (airline
 miles, credit card points, hotel points, ...) and getting emailed before they
@@ -82,7 +82,7 @@ nonroot runtime) producing a single static binary with no shell, package
 manager, or dynamic libraries in the final image.
 
 ```sh
-podman build -t kulhanek-points-tracker -f Containerfile .
+podman build -t quay.io/wkulhanek/points-tracker -f Containerfile .
 ```
 
 ### CI
@@ -90,24 +90,24 @@ podman build -t kulhanek-points-tracker -f Containerfile .
 `.github/workflows/build-push.yml` runs `go vet`/`go test` on every push, and
 on pushes to `main` or `v*` tags, builds and pushes multi-arch
 (`linux/amd64`, `linux/arm64`) images to
-`quay.io/wkulhanek/kulhanek-points-tracker`. Requires two repo secrets:
+`quay.io/wkulhanek/points-tracker`. Requires two repo secrets:
 `QUAY_USERNAME` and `QUAY_ROBOT_TOKEN` (create a robot account under the
 quay.io repository's Settings → Robot Accounts, grant it write access).
 
 ### Running on Fedora 44+ (Podman Quadlet)
 
-See `deploy/quadlet/kulhanek-points-tracker.container` (installation steps are
+See `deploy/quadlet/points-tracker.container` (installation steps are
 in a comment at the top of that file) and `deploy/quadlet/env.example` for the
 `EnvironmentFile`. In short:
 
 ```sh
-sudo mkdir -p /etc/containers/systemd /etc/kulhanek-points-tracker
-sudo cp deploy/quadlet/kulhanek-points-tracker.container /etc/containers/systemd/
-sudo cp deploy/quadlet/env.example /etc/kulhanek-points-tracker/env   # then edit it
-sudo mkdir -p /var/lib/kulhanek-points-tracker
-sudo chown 65532:65532 /var/lib/kulhanek-points-tracker
+sudo mkdir -p /etc/containers/systemd /etc/points-tracker
+sudo cp deploy/quadlet/points-tracker.container /etc/containers/systemd/
+sudo cp deploy/quadlet/env.example /etc/points-tracker/env   # then edit it
+sudo mkdir -p /var/lib/points-tracker
+sudo chown 65532:65532 /var/lib/points-tracker
 sudo systemctl daemon-reload
-sudo systemctl start kulhanek-points-tracker.service
+sudo systemctl start points-tracker.service
 ```
 
 The unit publishes the app to `127.0.0.1:8080` only — front it with the

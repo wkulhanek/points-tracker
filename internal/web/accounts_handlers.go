@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/accounts"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/templates/accounts"
 )
 
 func handleAccountsList(d *Deps) http.HandlerFunc {

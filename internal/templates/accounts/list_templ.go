@@ -9,9 +9,9 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/components"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/templates/components"
+	"github.com/wkulhanek/points-tracker/internal/templates/layout"
 )
 
 func List(appName string, accts []accounts.Account, flashKind string, flashMsg string) templ.Component {

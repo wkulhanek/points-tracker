@@ -1,17 +1,17 @@
 # Podman Quadlet unit for Fedora 44+ (systemd generates a matching
-# kulhanek-points-tracker.service from this file).
+# points-tracker.service from this file).
 #
 # Install:
 #   sudo mkdir -p /etc/containers/systemd
-#   sudo cp kulhanek-points-tracker.container /etc/containers/systemd/
-#   sudo mkdir -p /etc/kulhanek-points-tracker
-#   sudo cp env.example /etc/kulhanek-points-tracker/env   # then edit it
-#   sudo mkdir -p /var/lib/kulhanek-points-tracker
-#   sudo chown 65532:65532 /var/lib/kulhanek-points-tracker   # matches the
+#   sudo cp points-tracker.container /etc/containers/systemd/
+#   sudo mkdir -p /etc/points-tracker
+#   sudo cp env.example /etc/points-tracker/env   # then edit it
+#   sudo mkdir -p /var/lib/points-tracker
+#   sudo chown 65532:65532 /var/lib/points-tracker   # matches the
 #     image's distroless "nonroot" user, so the app can write its SQLite
 #     database and backups there.
 #   sudo systemctl daemon-reload
-#   sudo systemctl start kulhanek-points-tracker.service
+#   sudo systemctl start points-tracker.service
 #
 # The app listens on plain HTTP and is only published to localhost — put it
 # behind the reverse proxy you already run on this host (or drop the
@@ -19,19 +19,19 @@
 # network).
 
 [Unit]
-Description=Kulhanek Points Tracker
+Description=Points Tracker
 After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=quay.io/wkulhanek/kulhanek-points-tracker:latest
+Image=quay.io/wkulhanek/points-tracker:latest
 # Pulls a new image when one's available and restarts the unit; only takes
 # effect once `sudo systemctl enable --now podman-auto-update.timer` has
 # been run once on the host. Remove this line if you'd rather update
 # manually (`podman pull ... && systemctl restart ...`).
 AutoUpdate=registry
-EnvironmentFile=/etc/kulhanek-points-tracker/env
-Volume=/var/lib/kulhanek-points-tracker:/data:Z
+EnvironmentFile=/etc/points-tracker/env
+Volume=/var/lib/points-tracker:/data:Z
 PublishPort=127.0.0.1:8080:8080
 
 [Service]

@@ -7,9 +7,9 @@ package factory
 import (
 	"fmt"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/gmail"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/smtp"
+	"github.com/wkulhanek/points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email/gmail"
+	"github.com/wkulhanek/points-tracker/internal/email/smtp"
 )
 
 type Factory struct {

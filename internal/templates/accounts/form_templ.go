@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/providers"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/providers"
 )
 
 func Form(a accounts.Account, isNew bool, errorMsg string, knownOwners []string) templ.Component {

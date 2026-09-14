@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Kulhanek Points Tracker: a small, self-hosted Go app that tracks loyalty/rewards points accounts and emails a warning before they expire. Single admin user, SQLite storage, no SPA — see README.md for the full feature list and deployment instructions (Containerfile, Podman Quadlet on Fedora, CI to quay.io). This file only covers what's needed to work productively on the code itself.
+Points Tracker: a small, self-hosted Go app that tracks loyalty/rewards points accounts and emails a warning before they expire. Single admin user, SQLite storage, no SPA — see README.md for the full feature list and deployment instructions (Containerfile, Podman Quadlet on Fedora, CI to quay.io). This file only covers what's needed to work productively on the code itself.
 
 ## Commands
 

@@ -1,4 +1,4 @@
-# Security analysis — Kulhanek Points Tracker
+# Security analysis — Points Tracker
 
 Scope: the Go web application in this repository, deployed behind a
 TLS-terminating reverse proxy, single admin account, SQLite storage.
@@ -123,7 +123,7 @@ container/journald logs.
   drop all capabilities, and mount `/tmp` as `tmpfs` in the Quadlet unit.
   (The image is already distroless + non-root.)
 - **Secrets:** prefer Podman/systemd secrets over a world-readable
-  `EnvironmentFile`, or at minimum `chmod 600 /etc/kulhanek-points-tracker/env`.
+  `EnvironmentFile`, or at minimum `chmod 600 /etc/points-tracker/env`.
 - **Off-site backups:** the local snapshots share the volume with the DB; copy
   them somewhere else and encrypt them.
 - **CI supply chain:** GitHub Actions are pinned to major tags (`@v4`), not

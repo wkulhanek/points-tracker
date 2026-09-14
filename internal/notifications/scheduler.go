@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
 )
 
 // SenderFactory builds the currently active email.Sender. Implemented by

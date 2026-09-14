@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/auth"
+	"github.com/wkulhanek/points-tracker/internal/auth"
+	"github.com/wkulhanek/points-tracker/internal/templates/auth"
 )
 
 func handleLoginPage(d *Deps) http.HandlerFunc {
