@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 )
 
 type contextKey int
@@ -11,31 +12,46 @@ type contextKey int
 const userContextKey contextKey = 0
 
 // SetSessionCookie writes the session cookie for a newly created session.
-// Secure is always set: the app is only ever expected to be reached through
-// a TLS-terminating reverse proxy, even though it speaks plain HTTP itself.
-func SetSessionCookie(w http.ResponseWriter, sess Session) {
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, sess Session) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookieName,
 		Value:    sess.ID,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   IsSecureRequest(r),
 		SameSite: http.SameSiteLaxMode,
 		Expires:  sess.ExpiresAt,
 	})
 }
 
 // ClearSessionCookie removes the session cookie (logout).
-func ClearSessionCookie(w http.ResponseWriter) {
+func ClearSessionCookie(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookieName,
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   IsSecureRequest(r),
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
+}
+
+// IsSecureRequest reports whether the request reached us over HTTPS, either
+// directly or (the expected case in production) terminated by a reverse
+// proxy that sets X-Forwarded-Proto. The Secure cookie attribute is only
+// set when this is true: hardcoding it unconditionally would make the app
+// impossible to log into when run directly over plain HTTP — e.g. testing
+// a container locally before putting it behind a real reverse proxy —
+// since browsers refuse to send Secure cookies back over an insecure
+// connection. This app is still only ever *intended* to be reached through
+// a TLS-terminating reverse proxy in production; this just makes that
+// non-negotiable in every environment.
+func IsSecureRequest(r *http.Request) bool {
+	if r.TLS != nil {
+		return true
+	}
+	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
 }
 
 // RequireAuth protects handlers behind a valid session cookie. HTMX partial

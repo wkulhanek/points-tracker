@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
 	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
 	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/gmail"
 	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/settings"
@@ -48,7 +49,7 @@ func handleGoogleOAuthStart(d *Deps) http.HandlerFunc {
 			Path:     "/",
 			MaxAge:   600,
 			HttpOnly: true,
-			Secure:   true,
+			Secure:   auth.IsSecureRequest(r),
 			SameSite: http.SameSiteLaxMode,
 		})
 		http.Redirect(w, r, d.GmailOAuth.AuthCodeURL(state), http.StatusSeeOther)
@@ -67,7 +68,7 @@ func handleGoogleOAuthCallback(d *Deps) http.HandlerFunc {
 			http.Error(w, "invalid OAuth state", http.StatusBadRequest)
 			return
 		}
-		http.SetCookie(w, &http.Cookie{Name: oauthStateCookie, Value: "", Path: "/", MaxAge: -1})
+		http.SetCookie(w, &http.Cookie{Name: oauthStateCookie, Value: "", Path: "/", MaxAge: -1, Secure: auth.IsSecureRequest(r)})
 
 		code := r.URL.Query().Get("code")
 		if code == "" {

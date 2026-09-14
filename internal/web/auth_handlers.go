@@ -43,7 +43,7 @@ func handleLoginSubmit(d *Deps) http.HandlerFunc {
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
-		auth.SetSessionCookie(w, sess)
+		auth.SetSessionCookie(w, r, sess)
 		http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 	}
 }
@@ -53,7 +53,7 @@ func handleLogout(d *Deps) http.HandlerFunc {
 		if cookie, err := r.Cookie(auth.CookieName); err == nil {
 			_ = d.AuthStore.DeleteSession(cookie.Value)
 		}
-		auth.ClearSessionCookie(w)
+		auth.ClearSessionCookie(w, r)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	}
 }
