@@ -1,0 +1,14 @@
+package accountsview
+
+// EmptyStateOOB out-of-band-swaps the "No accounts yet" message, which
+// otherwise only gets (re)rendered on a full page load. handleAccountCreate
+// and handleAccountDelete send this alongside their row-level response so
+// the message correctly disappears/reappears without a page reload. Its id
+// must match the persistent #empty-state wrapper rendered in list.templ.
+templ EmptyStateOOB(empty bool) {
+	<div id="empty-state" hx-swap-oob="true">
+		if empty {
+			<p class="px-4 py-6 text-center text-sm text-slate-500">No accounts yet — add one to get started.</p>
+		}
+	</div>
+}

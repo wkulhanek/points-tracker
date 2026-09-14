@@ -45,7 +45,7 @@ templ newForm(a accounts.Account, errorMsg string) {
 
 templ editForm(a accounts.Account, errorMsg string) {
 	<tr id={ rowID(a.ID) }>
-		<td colspan="6" class="bg-slate-50 px-4 py-4">
+		<td colspan="7" class="bg-slate-50 px-4 py-4">
 			if errorMsg != "" {
 				<div class="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{ errorMsg }</div>
 			}
@@ -92,6 +92,15 @@ templ fields(a accounts.Account) {
 		</datalist>
 	</div>
 	<div>
+		<label class="block text-xs font-medium text-slate-600">Owner</label>
+		<select name="owner" required
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+			for _, o := range accounts.Owners {
+				<option value={ string(o) } selected?={ ownerOrDefault(a) == o }>{ string(o) }</option>
+			}
+		</select>
+	</div>
+	<div>
 		<label class="block text-xs font-medium text-slate-600">Account number</label>
 		<input type="text" name="account_number" value={ a.AccountNumber } placeholder="Optional"
 			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
@@ -104,7 +113,13 @@ templ fields(a accounts.Account) {
 	<div>
 		<label class="block text-xs font-medium text-slate-600">Expiration date</label>
 		<input type="date" name="expiration_date" value={ expirationInputValue(a) } required
-			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"/>
+			disabled?={ a.DoesNotExpire }
+			class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100 disabled:text-slate-400"/>
+		<label class="mt-1 flex items-center gap-1.5 text-xs text-slate-600">
+			<input type="checkbox" name="does_not_expire" checked?={ a.DoesNotExpire }
+				onchange="this.closest('form').querySelector('[name=expiration_date]').disabled = this.checked"/>
+			Does not expire
+		</label>
 	</div>
 	<div class="col-span-full">
 		<label class="block text-xs font-medium text-slate-600">Notes</label>

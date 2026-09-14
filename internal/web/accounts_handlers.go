@@ -52,6 +52,9 @@ func handleAccountCreate(d *Deps) http.HandlerFunc {
 		}
 
 		render(w, r, accountsview.Row(a))
+		// A successful create always means the list is non-empty now, so
+		// OOB-swap away the "No accounts yet" message without an extra query.
+		render(w, r, accountsview.EmptyStateOOB(false))
 		// Clear the add-account form slot out-of-band now that it's saved.
 		fmt.Fprint(w, `<div id="account-form-slot" hx-swap-oob="true"></div>`)
 	}
@@ -146,8 +149,15 @@ func handleAccountDelete(d *Deps) http.HandlerFunc {
 			http.Error(w, "failed to delete account", http.StatusInternalServerError)
 			return
 		}
-		// Empty body + hx-swap="outerHTML" on the row removes it from the table.
-		w.WriteHeader(http.StatusOK)
+		accts, err := d.Accounts.List()
+		if err != nil {
+			http.Error(w, "failed to load accounts", http.StatusInternalServerError)
+			return
+		}
+		// Empty body + hx-swap="outerHTML" on the row removes it from the
+		// table; separately OOB-swap the "No accounts yet" message back in
+		// if that was the last account.
+		render(w, r, accountsview.EmptyStateOOB(len(accts) == 0))
 	}
 }
 
@@ -167,9 +177,19 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 		return accounts.Input{}, errors.New("points balance must be a non-negative number.")
 	}
 
-	expiration, err := time.Parse("2006-01-02", r.FormValue("expiration_date"))
-	if err != nil {
-		return accounts.Input{}, errors.New("expiration date is required.")
+	owner := accounts.Owner(r.FormValue("owner"))
+	if !validOwner(owner) {
+		return accounts.Input{}, errors.New("owner must be Wolfgang, Barbara, or Joint.")
+	}
+
+	doesNotExpire := r.FormValue("does_not_expire") != ""
+
+	var expiration time.Time
+	if !doesNotExpire {
+		expiration, err = time.Parse("2006-01-02", r.FormValue("expiration_date"))
+		if err != nil {
+			return accounts.Input{}, errors.New("expiration date is required (or check \"Does not expire\").")
+		}
 	}
 
 	return accounts.Input{
@@ -178,6 +198,17 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 		AccountNumber:  strings.TrimSpace(r.FormValue("account_number")),
 		PointsBalance:  points,
 		ExpirationDate: expiration,
+		DoesNotExpire:  doesNotExpire,
+		Owner:          owner,
 		Notes:          strings.TrimSpace(r.FormValue("notes")),
 	}, nil
+}
+
+func validOwner(o accounts.Owner) bool {
+	for _, valid := range accounts.Owners {
+		if o == valid {
+			return true
+		}
+	}
+	return false
 }

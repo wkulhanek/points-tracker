@@ -27,6 +27,7 @@ templ List(appName string, accts []accounts.Account, flashKind string, flashMsg 
 					<tr>
 						<th class="px-4 py-3">Name</th>
 						<th class="px-4 py-3">Provider</th>
+						<th class="px-4 py-3">Owner</th>
 						<th class="px-4 py-3">Account #</th>
 						<th class="px-4 py-3">Points</th>
 						<th class="px-4 py-3">Expires</th>
@@ -39,9 +40,11 @@ templ List(appName string, accts []accounts.Account, flashKind string, flashMsg 
 					}
 				</tbody>
 			</table>
-			if len(accts) == 0 {
-				<p class="px-4 py-6 text-center text-sm text-slate-500">No accounts yet — add one to get started.</p>
-			}
+			<div id="empty-state">
+				if len(accts) == 0 {
+					<p class="px-4 py-6 text-center text-sm text-slate-500">No accounts yet — add one to get started.</p>
+				}
+			</div>
 		</div>
 	}
 }

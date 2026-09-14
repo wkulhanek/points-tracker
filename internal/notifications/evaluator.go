@@ -30,6 +30,9 @@ func Evaluate(now time.Time, accts []accounts.Account, thresholds []preferences.
 
 	var pending []Pending
 	for _, a := range accts {
+		if a.DoesNotExpire {
+			continue
+		}
 		for _, t := range thresholds {
 			if !t.Enabled {
 				continue

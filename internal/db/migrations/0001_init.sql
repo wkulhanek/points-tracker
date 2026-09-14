@@ -26,6 +26,8 @@ CREATE TABLE accounts (
     account_number  TEXT,
     points_balance  INTEGER NOT NULL DEFAULT 0,
     expiration_date TEXT NOT NULL,
+    does_not_expire INTEGER NOT NULL DEFAULT 0 CHECK (does_not_expire IN (0, 1)),
+    owner           TEXT NOT NULL DEFAULT 'Joint' CHECK (owner IN ('Wolfgang', 'Barbara', 'Joint')),
     notes           TEXT,
     created_at      TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))

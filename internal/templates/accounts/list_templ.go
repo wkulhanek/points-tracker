@@ -51,7 +51,7 @@ func List(appName string, accts []accounts.Account, flashKind string, flashMsg s
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"mb-6 flex items-center justify-between\"><h1 class=\"text-2xl font-semibold\">Accounts</h1><button hx-get=\"/accounts/new\" hx-target=\"#account-form-slot\" hx-swap=\"innerHTML\" class=\"rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700\">Add account</button></div><div id=\"account-form-slot\"></div><div class=\"overflow-hidden rounded-lg border border-slate-200 bg-white\"><table class=\"min-w-full divide-y divide-slate-200 text-sm\"><thead class=\"bg-slate-50 text-left text-xs font-medium uppercase text-slate-500\"><tr><th class=\"px-4 py-3\">Name</th><th class=\"px-4 py-3\">Provider</th><th class=\"px-4 py-3\">Account #</th><th class=\"px-4 py-3\">Points</th><th class=\"px-4 py-3\">Expires</th><th class=\"px-4 py-3\"></th></tr></thead> <tbody id=\"account-rows\" class=\"divide-y divide-slate-200\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"mb-6 flex items-center justify-between\"><h1 class=\"text-2xl font-semibold\">Accounts</h1><button hx-get=\"/accounts/new\" hx-target=\"#account-form-slot\" hx-swap=\"innerHTML\" class=\"rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700\">Add account</button></div><div id=\"account-form-slot\"></div><div class=\"overflow-hidden rounded-lg border border-slate-200 bg-white\"><table class=\"min-w-full divide-y divide-slate-200 text-sm\"><thead class=\"bg-slate-50 text-left text-xs font-medium uppercase text-slate-500\"><tr><th class=\"px-4 py-3\">Name</th><th class=\"px-4 py-3\">Provider</th><th class=\"px-4 py-3\">Owner</th><th class=\"px-4 py-3\">Account #</th><th class=\"px-4 py-3\">Points</th><th class=\"px-4 py-3\">Expires</th><th class=\"px-4 py-3\"></th></tr></thead> <tbody id=\"account-rows\" class=\"divide-y divide-slate-200\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -61,7 +61,7 @@ func List(appName string, accts []accounts.Account, flashKind string, flashMsg s
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</tbody></table>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</tbody></table><div id=\"empty-state\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -71,7 +71,7 @@ func List(appName string, accts []accounts.Account, flashKind string, flashMsg s
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

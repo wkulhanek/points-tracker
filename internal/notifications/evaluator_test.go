@@ -100,3 +100,22 @@ func TestEvaluate(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluate_DoesNotExpire(t *testing.T) {
+	threshold30 := preferences.Threshold{ID: 1, DaysBefore: 30, Enabled: true}
+
+	// An expiration date far in the past relative to `now`, which would
+	// normally make every threshold overdue — DoesNotExpire must still
+	// suppress all of them.
+	account := accounts.Account{
+		ID:             100,
+		Name:           "Delta SkyMiles",
+		ExpirationDate: date("2020-01-01"),
+		DoesNotExpire:  true,
+	}
+
+	got := Evaluate(date("2026-01-01"), []accounts.Account{account}, []preferences.Threshold{threshold30}, nil)
+	if len(got) != 0 {
+		t.Fatalf("got %d pending notifications for a DoesNotExpire account, want 0: %+v", len(got), got)
+	}
+}

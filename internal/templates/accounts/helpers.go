@@ -15,13 +15,24 @@ func formatPoints(n int64) string {
 	return fmt.Sprintf("%d", n)
 }
 
+// ownerOrDefault defaults a brand-new (zero-value) account's owner to
+// Joint, so the "Add account" form's dropdown doesn't start on a blank
+// selection.
+func ownerOrDefault(a accounts.Account) accounts.Owner {
+	if a.Owner == "" {
+		return accounts.OwnerJoint
+	}
+	return a.Owner
+}
+
 // expirationInputValue formats an account's expiration date for an
-// <input type="date">, defaulting a brand-new (zero-value) account to one
-// year out so the "Add account" form doesn't start on an already-expired
-// date.
+// <input type="date">, defaulting to one year out for a brand-new
+// (zero-value) account, or a DoesNotExpire account (whose stored date is
+// just a storage sentinel, not meant to be shown) — so the field starts on
+// a sensible date if "Does not expire" is later unchecked.
 func expirationInputValue(a accounts.Account) string {
 	d := a.ExpirationDate
-	if d.IsZero() {
+	if d.IsZero() || a.DoesNotExpire {
 		d = time.Now().AddDate(1, 0, 0)
 	}
 	return d.Format("2006-01-02")

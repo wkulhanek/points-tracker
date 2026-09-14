@@ -25,14 +25,25 @@ type Input struct {
 	AccountNumber  string
 	PointsBalance  int64
 	ExpirationDate time.Time
+	DoesNotExpire  bool
+	Owner          Owner
 	Notes          string
+}
+
+// storedExpiration returns the date to persist for an account: the real
+// expiration date, or the never-expires sentinel when DoesNotExpire is set.
+func (in Input) storedExpiration() time.Time {
+	if in.DoesNotExpire {
+		return neverExpiresDate
+	}
+	return in.ExpirationDate
 }
 
 // List returns all accounts ordered by soonest-expiring first, since that's
 // the order the accounts list page wants to surface them in.
 func (s *Store) List() ([]Account, error) {
 	rows, err := s.db.Query(`
-		SELECT id, name, provider, account_number, points_balance, expiration_date, notes, created_at, updated_at
+		SELECT id, name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at
 		FROM accounts
 		ORDER BY expiration_date ASC, name ASC`)
 	if err != nil {
@@ -54,7 +65,7 @@ func (s *Store) List() ([]Account, error) {
 // Get returns a single account by ID.
 func (s *Store) Get(id int64) (Account, error) {
 	row := s.db.QueryRow(`
-		SELECT id, name, provider, account_number, points_balance, expiration_date, notes, created_at, updated_at
+		SELECT id, name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at
 		FROM accounts WHERE id = ?`, id)
 	a, err := scanAccount(row)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -66,9 +77,9 @@ func (s *Store) Get(id int64) (Account, error) {
 // Create inserts a new account and returns its ID.
 func (s *Store) Create(in Input) (int64, error) {
 	res, err := s.db.Exec(`
-		INSERT INTO accounts (name, provider, account_number, points_balance, expiration_date, notes)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.ExpirationDate.Format(dateLayout), in.Notes)
+		INSERT INTO accounts (name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes)
 	if err != nil {
 		return 0, err
 	}
@@ -81,10 +92,10 @@ func (s *Store) Create(in Input) (int64, error) {
 func (s *Store) Update(tx *sql.Tx, id int64, in Input) error {
 	_, err := tx.Exec(`
 		UPDATE accounts
-		SET name = ?, provider = ?, account_number = ?, points_balance = ?, expiration_date = ?, notes = ?,
+		SET name = ?, provider = ?, account_number = ?, points_balance = ?, expiration_date = ?, does_not_expire = ?, owner = ?, notes = ?,
 		    updated_at = datetime('now')
 		WHERE id = ?`,
-		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.ExpirationDate.Format(dateLayout), in.Notes, id)
+		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes, id)
 	return err
 }
 
@@ -121,14 +132,17 @@ type rowScanner interface {
 
 func scanAccount(row rowScanner) (Account, error) {
 	var a Account
-	var expiration, createdAt, updatedAt string
+	var expiration, owner, createdAt, updatedAt string
 	var accountNumber, notes sql.NullString
+	var doesNotExpire bool
 
-	err := row.Scan(&a.ID, &a.Name, &a.Provider, &accountNumber, &a.PointsBalance, &expiration, &notes, &createdAt, &updatedAt)
+	err := row.Scan(&a.ID, &a.Name, &a.Provider, &accountNumber, &a.PointsBalance, &expiration, &doesNotExpire, &owner, &notes, &createdAt, &updatedAt)
 	if err != nil {
 		return Account{}, err
 	}
 	a.AccountNumber = accountNumber.String
+	a.DoesNotExpire = doesNotExpire
+	a.Owner = Owner(owner)
 	a.Notes = notes.String
 
 	a.ExpirationDate, err = time.Parse(dateLayout, expiration)
