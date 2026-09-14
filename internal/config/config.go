@@ -11,6 +11,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -34,6 +35,15 @@ type Config struct {
 	// works).
 	GoogleClientID     string
 	GoogleClientSecret string
+
+	// TrustProxy indicates that the app is reachable only through a trusted
+	// reverse proxy that sets X-Forwarded-* headers. When true, the client
+	// IP used for login rate limiting is taken from X-Forwarded-For; when
+	// false, r.RemoteAddr is used. Defaults to true because the app is
+	// designed to run behind a proxy, but it must then never be exposed
+	// directly — otherwise clients can spoof X-Forwarded-For. Set
+	// TRUST_PROXY=false if the app is reachable directly.
+	TrustProxy bool
 }
 
 // Load reads configuration from environment variables, applying sensible
@@ -43,11 +53,12 @@ func Load() (Config, error) {
 	cfg := Config{
 		Port:               getEnv("PORT", "8080"),
 		DataDir:            getEnv("DATA_DIR", "./data"),
-		BaseURL:             getEnv("BASE_URL", "http://localhost:8080"),
+		BaseURL:            getEnv("BASE_URL", "http://localhost:8080"),
 		AdminUsername:      os.Getenv("ADMIN_USERNAME"),
 		AdminPassword:      os.Getenv("ADMIN_PASSWORD"),
 		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		TrustProxy:         !strings.EqualFold(getEnv("TRUST_PROXY", "true"), "false"),
 	}
 
 	if cfg.AdminUsername == "" || cfg.AdminPassword == "" {

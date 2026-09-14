@@ -36,6 +36,12 @@ func (s *Service) Delete(id int64) error {
 	return s.store.Delete(id)
 }
 
+// DistinctOwners returns every distinct owner name already in use, for the
+// account form's autocomplete suggestions.
+func (s *Service) DistinctOwners() ([]string, error) {
+	return s.store.DistinctOwners()
+}
+
 // Update saves the given account fields. If the expiration date is
 // changing, any notification history tied to the old date is purged in the
 // same transaction, so previously-sent thresholds fire again against the

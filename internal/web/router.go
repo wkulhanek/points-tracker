@@ -55,5 +55,7 @@ func NewRouter(d *Deps) http.Handler {
 	mux.Handle("POST /settings/preferences/thresholds", protect(handleThresholdAdd(d)))
 	mux.Handle("POST /settings/preferences/thresholds/{id}/delete", protect(handleThresholdDelete(d)))
 
-	return mux
+	// Apply cross-cutting hardening to every route: security headers, a
+	// request-body cap, and a same-origin check on state-changing methods.
+	return securityHeaders(limitBody(requireSameOrigin(mux, d.BaseURL)))
 }

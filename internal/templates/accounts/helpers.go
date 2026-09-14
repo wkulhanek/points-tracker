@@ -16,8 +16,7 @@ func formatPoints(n int64) string {
 }
 
 // ownerOrDefault defaults a brand-new (zero-value) account's owner to
-// Joint, so the "Add account" form's dropdown doesn't start on a blank
-// selection.
+// Joint, so the "Add account" form's owner field doesn't start out blank.
 func ownerOrDefault(a accounts.Account) accounts.Owner {
 	if a.Owner == "" {
 		return accounts.OwnerJoint

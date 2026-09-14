@@ -3,7 +3,9 @@ package web
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/base64"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -64,7 +66,7 @@ func handleGoogleOAuthCallback(d *Deps) http.HandlerFunc {
 		}
 
 		cookie, err := r.Cookie(oauthStateCookie)
-		if err != nil || cookie.Value == "" || cookie.Value != r.URL.Query().Get("state") {
+		if err != nil || cookie.Value == "" || subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(r.URL.Query().Get("state"))) != 1 {
 			http.Error(w, "invalid OAuth state", http.StatusBadRequest)
 			return
 		}
@@ -182,7 +184,11 @@ func handleTestEmail(d *Deps) http.HandlerFunc {
 		err = sender.Send(ctx, prefs.RecipientEmails, "Test email from "+prefs.AppDisplayName,
 			"This is a test email from "+prefs.AppDisplayName+". If you received this, notifications are working.")
 		if err != nil {
-			render(w, r, settingsview.TestResult(false, "Failed to send test email: "+err.Error()))
+			// Log the provider error for the operator but don't echo it to the
+			// browser — SMTP/Gmail errors can disclose hostnames, internal IPs,
+			// or account details.
+			slog.Error("test email send failed", "error", err)
+			render(w, r, settingsview.TestResult(false, "Failed to send test email. Check the server logs for details."))
 			return
 		}
 
