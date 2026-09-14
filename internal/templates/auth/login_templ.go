@@ -8,7 +8,7 @@ package authview
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/wkulhanek/kulhanek-points-tracker/internal/templates/layout"
+import "github.com/wkulhanek/points-tracker/internal/templates/layout"
 
 func Login(appName string, errorMsg string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

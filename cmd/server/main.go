@@ -1,4 +1,4 @@
-// Command server is the Kulhanek Points Tracker web application: it loads
+// Command server is the Points Tracker web application: it loads
 // configuration, opens the SQLite database, wires up every domain package,
 // and runs the HTTP server alongside the notification and backup
 // schedulers until it receives a shutdown signal.
@@ -14,17 +14,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/backup"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/config"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/db"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/factory"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/gmail"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/notifications"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/web"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/auth"
+	"github.com/wkulhanek/points-tracker/internal/backup"
+	"github.com/wkulhanek/points-tracker/internal/config"
+	"github.com/wkulhanek/points-tracker/internal/db"
+	"github.com/wkulhanek/points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email/factory"
+	"github.com/wkulhanek/points-tracker/internal/email/gmail"
+	"github.com/wkulhanek/points-tracker/internal/notifications"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/web"
 )
 
 func main() {
@@ -133,7 +133,7 @@ func run() error {
 		}
 	}()
 
-	slog.Info("kulhanek-points-tracker listening", "port", cfg.Port, "data_dir", cfg.DataDir)
+	slog.Info("points-tracker listening", "port", cfg.Port, "data_dir", cfg.DataDir)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

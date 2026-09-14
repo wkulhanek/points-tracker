@@ -5,12 +5,12 @@
 package web
 
 import (
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/factory"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/gmail"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/auth"
+	"github.com/wkulhanek/points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email/factory"
+	"github.com/wkulhanek/points-tracker/internal/email/gmail"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
 )
 
 type Deps struct {

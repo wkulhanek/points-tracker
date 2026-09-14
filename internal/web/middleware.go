@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
+	"github.com/wkulhanek/points-tracker/internal/auth"
 )
 
 // maxBodyBytes caps every request body. The app only ever accepts small

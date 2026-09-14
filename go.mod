@@ -1,4 +1,4 @@
-module github.com/wkulhanek/kulhanek-points-tracker
+module github.com/wkulhanek/points-tracker
 
 go 1.26.0
 

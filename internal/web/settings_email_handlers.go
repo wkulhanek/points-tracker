@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/email/gmail"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/templates/settings"
+	"github.com/wkulhanek/points-tracker/internal/auth"
+	"github.com/wkulhanek/points-tracker/internal/email"
+	"github.com/wkulhanek/points-tracker/internal/email/gmail"
+	"github.com/wkulhanek/points-tracker/internal/templates/settings"
 )
 
 const oauthStateCookie = "oauth_state"

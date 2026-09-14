@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/auth"
-	webassets "github.com/wkulhanek/kulhanek-points-tracker/web"
+	"github.com/wkulhanek/points-tracker/internal/auth"
+	webassets "github.com/wkulhanek/points-tracker/web"
 )
 
 // NewRouter builds the complete HTTP handler for the app: a single

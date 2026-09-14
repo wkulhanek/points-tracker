@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
 )
 
 func date(s string) time.Time {

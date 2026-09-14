@@ -6,8 +6,8 @@ package notifications
 import (
 	"time"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/accounts"
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/preferences"
+	"github.com/wkulhanek/points-tracker/internal/accounts"
+	"github.com/wkulhanek/points-tracker/internal/preferences"
 )
 
 // SentNotification records that a threshold has already fired for an

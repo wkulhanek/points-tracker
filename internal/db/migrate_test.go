@@ -7,7 +7,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/wkulhanek/kulhanek-points-tracker/internal/db/migrations"
+	"github.com/wkulhanek/points-tracker/internal/db/migrations"
 )
 
 // TestMigrateDoesNotCascadeDeleteAcrossTableRebuilds guards against a class
