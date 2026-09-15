@@ -22,24 +22,29 @@ templ List(appName string, accts []accounts.Account, flashKind string, flashMsg 
 		</div>
 		<div id="account-form-slot"></div>
 		<div class="overflow-hidden rounded-lg border border-slate-200 bg-white">
-			<table class="min-w-full divide-y divide-slate-200 text-sm">
-				<thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
-					<tr>
-						<th class="px-4 py-3">Name</th>
-						<th class="px-4 py-3">Provider</th>
-						<th class="px-4 py-3">Owner</th>
-						<th class="px-4 py-3">Account #</th>
-						<th class="px-4 py-3">Points</th>
-						<th class="px-4 py-3">Expires</th>
-						<th class="px-4 py-3"></th>
-					</tr>
-				</thead>
-				<tbody id="account-rows" class="divide-y divide-slate-200">
-					for _, a := range accts {
-						@Row(a)
-					}
-				</tbody>
-			</table>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-slate-200 text-sm">
+					<thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+						<tr>
+							@sortableHeader("Name", "name", "")
+							@sortableHeader("Provider", "provider", "")
+							@sortableHeader("Kind", "kind", "")
+							@sortableHeader("Owner", "owner", "")
+							@sortableHeader("Account #", "account_number", "")
+							@sortableHeader("Points", "points", "number")
+							@sortableHeader("Status", "status", "")
+							@sortableHeader("Expires", "expires", "")
+							@sortableHeader("Last updated", "last_updated", "")
+							<th class="px-4 py-3"></th>
+						</tr>
+					</thead>
+					<tbody id="account-rows" class="divide-y divide-slate-200">
+						for _, a := range accts {
+							@Row(a)
+						}
+					</tbody>
+				</table>
+			</div>
 			<div id="empty-state">
 				if len(accts) == 0 {
 					<p class="px-4 py-6 text-center text-sm text-slate-500">No accounts yet — add one to get started.</p>
@@ -47,4 +52,21 @@ templ List(appName string, accts []accounts.Account, flashKind string, flashMsg 
 			</div>
 		</div>
 	}
+}
+
+// sortableHeader renders a clickable <th> for the accounts table's
+// client-side column sort (see web/static/js/sort-table.js). sortType is
+// "number" for numeric columns or "" for text/date columns, which sort
+// correctly as plain strings (dates are formatted ISO-first in row.templ).
+templ sortableHeader(label string, sortKey string, sortType string) {
+	<th
+		class="cursor-pointer select-none px-4 py-3 hover:text-slate-700"
+		data-sort-key={ sortKey }
+		if sortType != "" {
+			data-sort-type={ sortType }
+		}
+	>
+		{ label }
+		<span class="ml-1 inline-block w-3" data-sort-arrow></span>
+	</th>
 }

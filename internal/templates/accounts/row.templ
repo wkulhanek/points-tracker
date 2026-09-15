@@ -9,12 +9,14 @@ import (
 
 templ Row(a accounts.Account) {
 	<tr id={ rowID(a.ID) }>
-		<td class="px-4 py-3 font-medium text-slate-900">{ a.Name }</td>
-		<td class="px-4 py-3 text-slate-600">{ a.Provider }</td>
-		<td class="px-4 py-3 text-slate-600">{ string(a.Owner) }</td>
-		<td class="px-4 py-3 text-slate-600">{ a.AccountNumber }</td>
-		<td class="px-4 py-3 text-slate-600">{ formatPoints(a.PointsBalance) }</td>
-		<td class="px-4 py-3">
+		<td class="px-4 py-3 font-medium text-slate-900" data-sort-value={ sortText(a.Name) }>{ a.Name }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ sortText(a.Provider) }>{ a.Provider }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ sortText(string(a.Kind)) }>{ string(a.Kind) }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ sortText(string(a.Owner)) }>{ string(a.Owner) }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ sortText(a.AccountNumber) }>{ a.AccountNumber }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ formatPoints(a.PointsBalance) }>{ formatPoints(a.PointsBalance) }</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ sortText(a.Status) }>{ a.Status }</td>
+		<td class="px-4 py-3" data-sort-value={ a.ExpirationDate.Format("2006-01-02") }>
 			if a.DoesNotExpire {
 				<span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Never expires</span>
 			} else {
@@ -24,6 +26,7 @@ templ Row(a accounts.Account) {
 				</div>
 			}
 		</td>
+		<td class="px-4 py-3 text-slate-600" data-sort-value={ a.PointsUpdatedAt.Format("2006-01-02T15:04:05") }>{ a.PointsUpdatedAt.Format("Jan 2, 2006") }</td>
 		<td class="px-4 py-3 text-right whitespace-nowrap">
 			<button
 				hx-get={ fmt.Sprintf("/accounts/%d/edit", a.ID) }

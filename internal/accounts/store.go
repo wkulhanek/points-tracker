@@ -22,6 +22,8 @@ func NewStore(db *sql.DB) *Store {
 type Input struct {
 	Name           string
 	Provider       string
+	Kind           Kind
+	Status         string
 	AccountNumber  string
 	PointsBalance  int64
 	ExpirationDate time.Time
@@ -43,7 +45,7 @@ func (in Input) storedExpiration() time.Time {
 // the order the accounts list page wants to surface them in.
 func (s *Store) List() ([]Account, error) {
 	rows, err := s.db.Query(`
-		SELECT id, name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at
+		SELECT id, name, provider, kind, status, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at, points_updated_at
 		FROM accounts
 		ORDER BY expiration_date ASC, name ASC`)
 	if err != nil {
@@ -65,7 +67,7 @@ func (s *Store) List() ([]Account, error) {
 // Get returns a single account by ID.
 func (s *Store) Get(id int64) (Account, error) {
 	row := s.db.QueryRow(`
-		SELECT id, name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at
+		SELECT id, name, provider, kind, status, account_number, points_balance, expiration_date, does_not_expire, owner, notes, created_at, updated_at, points_updated_at
 		FROM accounts WHERE id = ?`, id)
 	a, err := scanAccount(row)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -76,10 +78,14 @@ func (s *Store) Get(id int64) (Account, error) {
 
 // Create inserts a new account and returns its ID.
 func (s *Store) Create(in Input) (int64, error) {
+	// points_updated_at is set explicitly here (rather than relying on a
+	// column default, since ALTER TABLE ADD COLUMN in migration 0004 only
+	// allows a constant default) so a brand-new account's "last updated"
+	// starts out matching created_at, same as updated_at does.
 	res, err := s.db.Exec(`
-		INSERT INTO accounts (name, provider, account_number, points_balance, expiration_date, does_not_expire, owner, notes)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes)
+		INSERT INTO accounts (name, provider, kind, status, account_number, points_balance, expiration_date, does_not_expire, owner, notes, points_updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+		in.Name, in.Provider, in.Kind, in.Status, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes)
 	if err != nil {
 		return 0, err
 	}
@@ -92,25 +98,47 @@ func (s *Store) Create(in Input) (int64, error) {
 func (s *Store) Update(tx *sql.Tx, id int64, in Input) error {
 	_, err := tx.Exec(`
 		UPDATE accounts
-		SET name = ?, provider = ?, account_number = ?, points_balance = ?, expiration_date = ?, does_not_expire = ?, owner = ?, notes = ?,
+		SET name = ?, provider = ?, kind = ?, status = ?, account_number = ?, points_balance = ?, expiration_date = ?, does_not_expire = ?, owner = ?, notes = ?,
 		    updated_at = datetime('now')
 		WHERE id = ?`,
-		in.Name, in.Provider, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes, id)
+		in.Name, in.Provider, in.Kind, in.Status, in.AccountNumber, in.PointsBalance, in.storedExpiration().Format(dateLayout), in.DoesNotExpire, in.Owner, in.Notes, id)
 	return err
 }
 
-// ExpirationDate returns just the currently stored expiration date for an
-// account, used by Service.Update to detect whether it's changing.
-func (s *Store) ExpirationDate(tx *sql.Tx, id int64) (time.Time, error) {
+// Snapshot captures the fields of an account's prior state that
+// Service.Update needs to compare against the incoming Input after saving,
+// to decide whether notification history or the points-updated timestamp
+// need touching.
+type Snapshot struct {
+	ExpirationDate time.Time
+	PointsBalance  int64
+}
+
+// GetSnapshot returns the currently stored expiration date and points
+// balance for an account, used by Service.Update to detect whether either
+// is changing.
+func (s *Store) GetSnapshot(tx *sql.Tx, id int64) (Snapshot, error) {
 	var raw string
-	err := tx.QueryRow(`SELECT expiration_date FROM accounts WHERE id = ?`, id).Scan(&raw)
+	var points int64
+	err := tx.QueryRow(`SELECT expiration_date, points_balance FROM accounts WHERE id = ?`, id).Scan(&raw, &points)
 	if errors.Is(err, sql.ErrNoRows) {
-		return time.Time{}, ErrNotFound
+		return Snapshot{}, ErrNotFound
 	}
 	if err != nil {
-		return time.Time{}, err
+		return Snapshot{}, err
 	}
-	return time.Parse(dateLayout, raw)
+	exp, err := time.Parse(dateLayout, raw)
+	if err != nil {
+		return Snapshot{}, fmt.Errorf("parse expiration_date: %w", err)
+	}
+	return Snapshot{ExpirationDate: exp, PointsBalance: points}, nil
+}
+
+// TouchPointsUpdated stamps points_updated_at with the current time, called
+// only when Service.Update detects the points balance actually changed.
+func (s *Store) TouchPointsUpdated(tx *sql.Tx, id int64) error {
+	_, err := tx.Exec(`UPDATE accounts SET points_updated_at = datetime('now') WHERE id = ?`, id)
+	return err
 }
 
 // Delete removes an account (and, via ON DELETE CASCADE, its notification
@@ -160,14 +188,15 @@ type rowScanner interface {
 
 func scanAccount(row rowScanner) (Account, error) {
 	var a Account
-	var expiration, owner, createdAt, updatedAt string
+	var expiration, kind, owner, createdAt, updatedAt, pointsUpdatedAt string
 	var accountNumber, notes sql.NullString
 	var doesNotExpire bool
 
-	err := row.Scan(&a.ID, &a.Name, &a.Provider, &accountNumber, &a.PointsBalance, &expiration, &doesNotExpire, &owner, &notes, &createdAt, &updatedAt)
+	err := row.Scan(&a.ID, &a.Name, &a.Provider, &kind, &a.Status, &accountNumber, &a.PointsBalance, &expiration, &doesNotExpire, &owner, &notes, &createdAt, &updatedAt, &pointsUpdatedAt)
 	if err != nil {
 		return Account{}, err
 	}
+	a.Kind = Kind(kind)
 	a.AccountNumber = accountNumber.String
 	a.DoesNotExpire = doesNotExpire
 	a.Owner = Owner(owner)
@@ -184,6 +213,10 @@ func scanAccount(row rowScanner) (Account, error) {
 	a.UpdatedAt, err = time.Parse("2006-01-02 15:04:05", updatedAt)
 	if err != nil {
 		return Account{}, fmt.Errorf("parse updated_at: %w", err)
+	}
+	a.PointsUpdatedAt, err = time.Parse("2006-01-02 15:04:05", pointsUpdatedAt)
+	if err != nil {
+		return Account{}, fmt.Errorf("parse points_updated_at: %w", err)
 	}
 	return a, nil
 }

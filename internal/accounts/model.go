@@ -5,17 +5,47 @@ import "time"
 // Account is one tracked points/rewards account. Multiple accounts may
 // share the same Provider (e.g. two different Chase accounts).
 type Account struct {
-	ID             int64
-	Name           string
-	Provider       string
-	AccountNumber  string
-	PointsBalance  int64
-	ExpirationDate time.Time // date only, no time-of-day component
-	DoesNotExpire  bool      // true for programs whose points never expire
-	Owner          Owner
-	Notes          string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID              int64
+	Name            string
+	Provider        string
+	Kind            Kind
+	Status          string // free text, e.g. a loyalty tier like "Gold"
+	AccountNumber   string
+	PointsBalance   int64
+	ExpirationDate  time.Time // date only, no time-of-day component
+	DoesNotExpire   bool      // true for programs whose points never expire
+	Owner           Owner
+	Notes           string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	PointsUpdatedAt time.Time // last time PointsBalance actually changed value, not just any edit
+}
+
+// Kind categorizes what type of program an account belongs to. Unlike
+// Owner (a suggestion, not a constraint — see below), this is a genuine
+// fixed enum enforced by a CHECK constraint, presented as a <select> rather
+// than free text with autocomplete.
+type Kind string
+
+const (
+	KindAirline    Kind = "Airline"
+	KindHotel      Kind = "Hotel"
+	KindCreditCard Kind = "Credit Card"
+	KindOther      Kind = "Other"
+)
+
+// Kinds lists every valid Kind, in display order, for populating the
+// account form's <select> and validating submitted input.
+var Kinds = []Kind{KindAirline, KindHotel, KindCreditCard, KindOther}
+
+// ValidKind reports whether k is one of the fixed Kinds values.
+func ValidKind(k Kind) bool {
+	for _, valid := range Kinds {
+		if k == valid {
+			return true
+		}
+	}
+	return false
 }
 
 // Owner records who an account belongs to. It's free text, not a fixed

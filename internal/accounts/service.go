@@ -45,7 +45,10 @@ func (s *Service) DistinctOwners() ([]string, error) {
 // Update saves the given account fields. If the expiration date is
 // changing, any notification history tied to the old date is purged in the
 // same transaction, so previously-sent thresholds fire again against the
-// new date (e.g. after renewing/topping-up an account).
+// new date (e.g. after renewing/topping-up an account). If the points
+// balance is changing, points_updated_at is stamped with the current time
+// in the same transaction — it tracks actual balance changes, not every
+// edit (e.g. fixing a typo in Notes doesn't touch it).
 func (s *Service) Update(id int64, in Input) error {
 	tx, err := s.store.BeginTx()
 	if err != nil {
@@ -53,7 +56,7 @@ func (s *Service) Update(id int64, in Input) error {
 	}
 	defer tx.Rollback() //nolint:errcheck // no-op if committed
 
-	oldExpiration, err := s.store.ExpirationDate(tx, id)
+	before, err := s.store.GetSnapshot(tx, id)
 	if err != nil {
 		return err
 	}
@@ -62,9 +65,15 @@ func (s *Service) Update(id int64, in Input) error {
 		return fmt.Errorf("update account: %w", err)
 	}
 
-	if !oldExpiration.Equal(in.ExpirationDate) {
-		if err := clearStaleNotifications(tx, id, oldExpiration); err != nil {
+	if !before.ExpirationDate.Equal(in.ExpirationDate) {
+		if err := clearStaleNotifications(tx, id, before.ExpirationDate); err != nil {
 			return fmt.Errorf("clear stale notifications: %w", err)
+		}
+	}
+
+	if before.PointsBalance != in.PointsBalance {
+		if err := s.store.TouchPointsUpdated(tx, id); err != nil {
+			return fmt.Errorf("touch points_updated_at: %w", err)
 		}
 	}
 

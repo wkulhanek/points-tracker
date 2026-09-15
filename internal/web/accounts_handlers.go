@@ -191,6 +191,11 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 		return accounts.Input{}, errors.New("owner is required.")
 	}
 
+	kind := accounts.Kind(r.FormValue("kind"))
+	if !accounts.ValidKind(kind) {
+		return accounts.Input{}, errors.New("program kind must be one of the listed options.")
+	}
+
 	doesNotExpire := r.FormValue("does_not_expire") != ""
 
 	var expiration time.Time
@@ -204,6 +209,8 @@ func parseAccountInput(r *http.Request) (accounts.Input, error) {
 	return accounts.Input{
 		Name:           name,
 		Provider:       provider,
+		Kind:           kind,
+		Status:         strings.TrimSpace(r.FormValue("status")),
 		AccountNumber:  strings.TrimSpace(r.FormValue("account_number")),
 		PointsBalance:  points,
 		ExpirationDate: expiration,
